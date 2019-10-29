@@ -8,12 +8,36 @@ const auth = require('../middleware/auth');
 
 /**
  * @route   GET /retros
- * @desc    Get all retros
+ * @desc    Get all mob retros
  */
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
-    const retros = await Retro.find();
+    const user = await User.findById(req.user.id);
+    const retros = await Retro.find().where({ mob: user.mob });
+
     return res.json(retros);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
+/**
+ * @route   GET /retros/latest
+ * @desc    Get latest retro for mob
+ */
+router.get('/latest', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const retro = await Retro.where({ mob: user.mob })
+      .sort({ date: -1 })
+      .findOne();
+
+    if (!retro) {
+      return res.status(400).json({ error: 'No retro available' });
+    }
+
+    return res.json(retro);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'Server Error' });
@@ -24,7 +48,7 @@ router.get('/', async (req, res) => {
  * @route   GET /retros/:id
  * @desc    Get single retro by ID
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const retro = await Retro.findById(req.params.id);
 
@@ -67,9 +91,6 @@ router.post(
         .isEmpty(),
       check('todos.*', 'Todos are required')
         .not()
-        .isEmpty(),
-      check('mob', 'Mob is required')
-        .not()
         .isEmpty()
     ]
   ],
@@ -79,7 +100,9 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    let { name, type, awesomes, deltas, todos, mob } = req.body;
+    let { name, type, awesomes, deltas, todos } = req.body;
+
+    const user = await User.findById(req.user.id);
 
     todos = todos.map(todo => ({ name: todo }));
 
@@ -90,7 +113,7 @@ router.post(
         awesomes,
         deltas,
         todos,
-        mob,
+        mob: user.mob,
         user: req.user.id
       });
       // console.log(retro);
