@@ -17,6 +17,9 @@ app.use('/auth', require('./routes/auth'));
 app.use('/users', require('./routes/users'));
 app.use('/retros', require('./routes/retros'));
 
+// 404
+app.use((_, res) => res.status(404).json({ error: '404 | Page not found' }));
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
