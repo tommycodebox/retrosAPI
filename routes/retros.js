@@ -13,7 +13,24 @@ const auth = require('../middleware/auth');
 router.get('/', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    const retros = await Retro.find().where({ mob: user.mob });
+    const retros = await Retro.where({ mob: user.mob })
+      .sort({ date: -1 })
+      .find();
+
+    return res.json(retros);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
+/**
+ * @route   GET /retros/all
+ * @desc    Get all retros
+ */
+router.get('/all', auth, async (req, res) => {
+  try {
+    const retros = await Retro.find();
 
     return res.json(retros);
   } catch (err) {
@@ -83,13 +100,13 @@ router.post(
       check('type', 'Type is required')
         .not()
         .isEmpty(),
-      check('awesomes.*', 'Awesomes are required')
+      check('awesomes.*', 'Awesomes cannot be empty')
         .not()
         .isEmpty(),
-      check('deltas.*', 'Deltas are required')
+      check('deltas.*', 'Deltas cannot be empty')
         .not()
         .isEmpty(),
-      check('todos.*', 'Todos are required')
+      check('todos.*', 'Todos cannot be empty')
         .not()
         .isEmpty()
     ]

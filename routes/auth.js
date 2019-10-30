@@ -31,7 +31,7 @@ router.get('/', auth, async (req, res) => {
 router.post(
   '/',
   [
-    check('email', 'Email is required').isEmail(),
+    check('email', 'Email is not valid').isEmail(),
     check('password', 'Password is required (min 6)').isLength({ min: 6 })
   ],
   async (req, res) => {
