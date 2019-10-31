@@ -22,10 +22,19 @@ app.use('/retros', require('./routes/retros'));
 
 // Sockets
 io.on('connection', socket => {
-  console.log('User connected');
-
+  // console.log('User connected');
+  socket.on('mob', msg => {
+    // console.log(msg);
+    socket.broadcast.emit(msg.mob + '/mob', msg);
+  });
+  socket.on('start', msg => {
+    socket.broadcast.emit('started', msg);
+  });
   socket.on('msg', msg => {
     socket.broadcast.emit(msg.mob, msg);
+  });
+  socket.on('completed', msg => {
+    socket.broadcast.emit(msg.mob + '/completed', msg);
   });
 });
 
